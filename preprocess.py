@@ -3,6 +3,7 @@ import numpy as np
 import os
 
 import bam_cov
+import basenji_hdf5_single
 
 class Struct:
     def __init__(self, **entries):
