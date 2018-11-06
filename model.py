@@ -9,7 +9,6 @@ model = keras.Sequential()
 conv_dropout = 0.1 
 strides = 1 # needed to set dilation
 dilation_rate = 1
-learning_rate = 0.002
 
 
 # cnn_filter_sizes	20
@@ -149,13 +148,17 @@ model.add(Activation('relu'))
 # params
 output_size = 32 # TODO set to # bins
 
-model.add(Bidirectional(LSTM(384, return_sequences=True, dropout=0.5)))
-model.add(Bidirectional(LSTM(output_size, return_sequences=True, dropout=0.5)))
+model.add(Bidirectional(LSTM(384, return_sequences=True, dropout=0.5, unit_forget_bias=True)))
+model.add(Bidirectional(LSTM(output_size, return_sequences=True, dropout=0.5, unit_forget_bias=True)))
 model.add(Activation('softmax'))
+
+learning_rate = 0.002
+beta_1 = 0.97
+beta_2 = 0.98
 
 # just to test sizes
 model.compile(loss=keras.losses.poisson,
-              optimizer=keras.optimizers.SGD(lr=learning_rate),
+              optimizer=keras.optimizers.adam(lr=learning_rate, beta_1=beta_1, beta_2=beta_2),
               metrics=['accuracy'])
 
 # test input of size Nx4 where N=1000
