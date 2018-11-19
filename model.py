@@ -2,14 +2,15 @@ import keras
 import numpy as np
 
 from keras.layers import Conv1D, MaxPool1D, Dropout, BatchNormalization, Activation, Dense, LSTM, Bidirectional
+from keras.utils.io_utils import HDF5Matrix
+from keras.models import load_model
+from keras import metrics, backend
 
 model = keras.Sequential()
 
 # CNN
 conv_dropout = 0.1 
 strides = 1 # needed to set dilation
-dilation_rate = 1
-
 
 # cnn_filter_sizes	20
 # cnn_filters	128
@@ -76,7 +77,6 @@ model.add(Conv1D(32, kernel_size=3, strides=strides, activation=None, padding='c
 model.add(BatchNormalization())
 model.add(Activation('relu'))
 model.add(Dropout(conv_dropout))
-model.add(MaxPool1D(4))
 model.add(Dense(32))
 
 # cnn_filter_sizes	3
@@ -146,28 +146,65 @@ model.add(Activation('relu'))
 # RNN
 
 # params
-output_size = 32 # TODO set to # bins
+# output_size = 3 # TODO set to # bins
 
-model.add(Bidirectional(LSTM(384, return_sequences=True, dropout=0.5, unit_forget_bias=True)))
-model.add(Bidirectional(LSTM(output_size, return_sequences=True, dropout=0.5, unit_forget_bias=True)))
-model.add(Activation('softmax'))
+# model.add(Bidirectional(LSTM(384, return_sequences=True, dropout=0.5, unit_forget_bias=True)))
+# model.add(Bidirectional(LSTM(output_size, return_sequences=True, dropout=0.5, unit_forget_bias=True)))
+
+# this is sort of jank but need 3 channels in last step and 3 is an odd number 
+# so force it with this convolution
+model.add(Conv1D(3, kernel_size=1, strides=strides, activation=None, padding='causal', dilation_rate=1, name='last_conv'))
+model.add(BatchNormalization())
+model.add(Activation('softmax', name='last_activation'))
 
 learning_rate = 0.002
 beta_1 = 0.97
 beta_2 = 0.98
+batch_size = 4
 
-# just to test sizes
+# get data from h5 file
+train_small = batch_size*200
+data_file = "/Users/sylvielee/Documents/MIT/year_four/fall/867/data/heart_l131k.h5"
+X_train = HDF5Matrix(data_file, 'train_in', start=0, end =train_small)
+y_train = HDF5Matrix(data_file, 'train_out', start=0, end =train_small)
+
+valid_small = batch_size*10
+X_valid = HDF5Matrix(data_file, 'valid_in', start=0, end =valid_small)
+y_valid = HDF5Matrix(data_file, 'valid_out', start=0, end=valid_small)
+
+test_small = batch_size*100
+X_test = HDF5Matrix(data_file, 'test_in', start=0, end=test_small)
+y_test = HDF5Matrix(data_file, 'test_out', start=0, end=test_small)
+
+print("\ntrain")
+print(X_train.shape)
+print(y_train.shape)
+
+print("\nvalidation")
+print(X_valid.shape)
+print(y_valid.shape)
+
+print("\nTest")
+print(X_test.shape)
+print(y_test.shape)
+
+# define custom metric euclidean distance
+def metric_distance(y_true, y_pred):
+    norm_true = backend.l2_normalize(y_true, axis=None)
+    norm_pred = backend.l2_normalize(y_pred, axis=None)
+    return backend.sqrt(backend.sum(backend.square(norm_true - norm_pred), axis=None, keepdims=False))
+
 model.compile(loss=keras.losses.poisson,
               optimizer=keras.optimizers.adam(lr=learning_rate, beta_1=beta_1, beta_2=beta_2),
-              metrics=['accuracy'])
+              metrics=[metric_distance])
 
-# test input of size Nx4 where N=1000
-# note that by default the conv1d layers expect channels last
-data = np.random.random((1, 1000, 4))
-labels = np.random.random((1, 1, output_size*2))
+model.fit(X_train, y_train, validation_data = (X_valid, y_valid), shuffle='batch', epochs=10, batch_size=batch_size)
+model.evaluate(X_test, y_test, batch_size=batch_size)
 
-# TODO set epochs
-model.fit(data, labels, epochs=10, batch_size=4)
+# save the model 
+save_filepath = "./saved_models/"
+model_name = "baseline_cnn.h5"
+model.save(save_filepath+model_name)
 
-print(model.layers)
-print(model.summary())
+# example of how to load the saved model
+# test = load_model(save_filepath+model_name, custom_objects={'metric_distance': metric_distance})
