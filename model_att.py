@@ -401,17 +401,23 @@ batch_size = 4
 
 # get data from h5 file
 train_small = batch_size*200
-data_file = "./data/heart_l131k.h5"
-X_train = HDF5Matrix(data_file, 'train_in', start=0, end =train_small)
-y_train = HDF5Matrix(data_file, 'train_out', start=0, end =train_small)
+data_file = "./data/new_heart_l131k.h5"
+# X_train = HDF5Matrix(data_file, 'train_in', start=0, end =train_small)
+# y_train = HDF5Matrix(data_file, 'train_out', start=0, end =train_small)
+X_train = HDF5Matrix(data_file, 'train_in')
+y_train = HDF5Matrix(data_file, 'train_out')
 
 valid_small = batch_size*10
-X_valid = HDF5Matrix(data_file, 'valid_in', start=0, end =valid_small)
-y_valid = HDF5Matrix(data_file, 'valid_out', start=0, end=valid_small)
+# X_valid = HDF5Matrix(data_file, 'valid_in', start=0, end =valid_small)
+# y_valid = HDF5Matrix(data_file, 'valid_out', start=0, end=valid_small)
+X_valid = HDF5Matrix(data_file, 'valid_in')
+y_valid = HDF5Matrix(data_file, 'valid_out')
 
 test_small = batch_size*100
-X_test = HDF5Matrix(data_file, 'test_in', start=0, end=test_small)
-y_test = HDF5Matrix(data_file, 'test_out', start=0, end=test_small)
+# X_test = HDF5Matrix(data_file, 'test_in', start=0, end=test_small)
+# y_test = HDF5Matrix(data_file, 'test_out', start=0, end=test_small)
+X_test = HDF5Matrix(data_file, 'test_in')
+y_test = HDF5Matrix(data_file, 'test_out')
 
 print("\ntrain")
 print(X_train.shape)
