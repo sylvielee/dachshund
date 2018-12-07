@@ -439,10 +439,10 @@ def correlation_multi(y_true, y_pred):
     mean_pred = K.expand_dims(K.mean(y_pred, axis=-2), axis=-2)
     std_true = K.expand_dims(K.std(y_true, axis=-2), axis=-2)
     std_pred = K.expand_dims(K.std(y_pred, axis=-2), axis=-2)
-    # sts_true = (y_true - mean_true) / std_true
-    # sts_pred = (y_pred - mean_pred) / std_pred
-    sts_true = (y_true - mean_true)
-    sts_pred = (y_pred - mean_pred)
+    sts_true = (y_true - mean_true) / std_true
+    sts_pred = (y_pred - mean_pred) / std_pred
+    # sts_true = (y_true - mean_true)
+    # sts_pred = (y_pred - mean_pred)
     # cent_true = y_true - K.expand_dims(mean_true, axis=-2)
     # cent_pred = y_pred - K.expand_dims(mean_pred, axis=-2)
     # norm_true = K.l2_normalize(cent_true, axis=-2)

@@ -144,7 +144,7 @@ class AttentionDilated(Layer):
         # print(K.int_shape(key), "key") ####
 
         comps = K.batch_dot(query, key, axes=2) / np.sqrt(self.units)
-        print(K.int_shape(comps), "comps_raw")
+        # print(K.int_shape(comps), "comps_raw") ####
         dil_mask = K.tile(block, (block_count, block_count))
         dil_mask = dil_mask[:seq_dim, :seq_dim]
         # dil_mask = K.slice(dil_mask, [0,0,0], [None, block_count, block_count])
@@ -377,7 +377,8 @@ od5 = concatenate([od4, dd5])
 atn = MultiHead(AttentionDilated(attn_units, dilation_rate=attn_dilation), layer_num=attn_heads)(od5)
 dat = Dropout(attn_dropout)(atn)
 fat = TimeDistributed(Flatten())(dat)
-oat = concatenate([fat, od4])
+dat = TimeDistributed(Dense(256, activation='relu'))(fat)
+oat = concatenate([dat, od5])
 
 out = TimeDistributed(Dense(3, activation='relu'))(oat)
 
@@ -439,10 +440,10 @@ def correlation_multi(y_true, y_pred):
     mean_pred = K.expand_dims(K.mean(y_pred, axis=-2), axis=-2)
     std_true = K.expand_dims(K.std(y_true, axis=-2), axis=-2)
     std_pred = K.expand_dims(K.std(y_pred, axis=-2), axis=-2)
-    # sts_true = (y_true - mean_true) / std_true
-    # sts_pred = (y_pred - mean_pred) / std_pred
-    sts_true = (y_true - mean_true)
-    sts_pred = (y_pred - mean_pred)
+    sts_true = (y_true - mean_true) / std_true
+    sts_pred = (y_pred - mean_pred) / std_pred
+    # sts_true = (y_true - mean_true)
+    # sts_pred = (y_pred - mean_pred)
     # cent_true = y_true - K.expand_dims(mean_true, axis=-2)
     # cent_pred = y_pred - K.expand_dims(mean_pred, axis=-2)
     # norm_true = K.l2_normalize(cent_true, axis=-2)
@@ -466,6 +467,8 @@ model_bi.compile(
     optimizer=keras.optimizers.adam(lr=learning_rate, beta_1=beta_1, beta_2=beta_2),
     metrics=[correlation_multi, r_sq_multi]
 )
+
+# keras.utils.plot_model(model, to_file='model_att.png') ####
 
 model_bi.fit(
     X_train, 
