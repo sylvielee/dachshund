@@ -42,6 +42,8 @@ class AttentionDilated(Layer):
 
         super().__init__(**kwargs)
 
+    # 'kernel_initializer': keras.initializers.serialize(keras.initializers.get(self.kernel_initializer)),
+    #         'bias_initializer': keras.initializers.serialize(keras.initializers.get(self.bias_initializer)),
     def get_config(self):
         config = {
             'units': self.units,
@@ -481,7 +483,7 @@ model_bi.fit(
     [y_train, y_train], 
     validation_data=(X_valid, [y_valid, y_valid]), 
     shuffle='batch', 
-    epochs=10, 
+    epochs=7, 
     batch_size=batch_size
 )
 model_bi.evaluate(X_test, [y_test, y_test], batch_size=batch_size)
