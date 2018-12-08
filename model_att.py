@@ -484,12 +484,12 @@ model_bi.fit(
     epochs=10, 
     batch_size=batch_size
 )
-model.evaluate(X_test, [y_test, y_test], batch_size=batch_size)
+model_bi.evaluate(X_test, [y_test, y_test], batch_size=batch_size)
 
 # save the model 
 save_filepath = "./saved_models/"
 model_name = "attention.h5"
-model.save(save_filepath+model_name)
+model_bi.save(save_filepath+model_name)
 
 # example of how to load the saved model
 # test = load_model(save_filepath+model_name, custom_objects={'metric_distance': metric_distance})
