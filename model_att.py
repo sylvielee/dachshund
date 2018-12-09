@@ -382,7 +382,7 @@ dat = Dropout(attn_dropout)(atn)
 fat = TimeDistributed(Flatten())(dat)
 # sat = TimeDistributed(Dense(256, activation='relu'))(fat)
 #oat = concatenate([fat, od5])
-oat = concatenate([fat, od4]) # try it essentially skipping od5 completely
+oat = concatenate([fat, od5]) 
 
 
 out = TimeDistributed(Dense(3, activation='relu'))(oat)
