@@ -50,8 +50,8 @@ class AttentionDilated(Layer):
             'return_attention': self.return_attention,
             'use_bias': self.use_bias,
             'dilation_rate': self.dilation_rate, 
-            'kernel_initializer': keras.regularizers.serialize(self.kernel_initializer),
-            'bias_initializer': keras.regularizers.serialize(self.bias_initializer),
+            'kernel_initializer': keras.initializers.serialize(keras.initializers.get(self.kernel_initializer)),
+            'bias_initializer': keras.initializers.serialize(keras.initializers.get(self.bias_initializer)),
             'kernel_regularizer': keras.regularizers.serialize(self.kernel_regularizer),
             'bias_regularizer': keras.regularizers.serialize(self.bias_regularizer),
             'kernel_constraint': keras.constraints.serialize(self.kernel_constraint),
@@ -380,7 +380,9 @@ atn = MultiHead(AttentionDilated(attn_units, dilation_rate=attn_dilation), layer
 dat = Dropout(attn_dropout)(atn)
 fat = TimeDistributed(Flatten())(dat)
 # sat = TimeDistributed(Dense(256, activation='relu'))(fat)
-oat = concatenate([fat, od5])
+#oat = concatenate([fat, od5])
+oat = concatenate([fat, od4]) # try it essentially skipping od5 completely
+
 
 out = TimeDistributed(Dense(3, activation='relu'))(oat)
 
@@ -448,10 +450,10 @@ def correlation_multi(y_true, y_pred):
     mean_pred = K.expand_dims(K.mean(y_pred, axis=-2), axis=-2)
     std_true = K.expand_dims(K.std(y_true, axis=-2), axis=-2)
     std_pred = K.expand_dims(K.std(y_pred, axis=-2), axis=-2)
-    sts_true = (y_true - mean_true) / std_true
-    sts_pred = (y_pred - mean_pred) / std_pred
-    # sts_true = (y_true - mean_true)
-    # sts_pred = (y_pred - mean_pred)
+    # sts_true = (y_true - mean_true) / std_true
+    # sts_pred = (y_pred - mean_pred) / std_pred
+    sts_true = (y_true - mean_true)
+    sts_pred = (y_pred - mean_pred)
     # cent_true = y_true - K.expand_dims(mean_true, axis=-2)
     # cent_pred = y_pred - K.expand_dims(mean_pred, axis=-2)
     # norm_true = K.l2_normalize(cent_true, axis=-2)

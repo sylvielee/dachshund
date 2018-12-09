@@ -1,0 +1,41 @@
+Using TensorFlow backend.
+
+train
+(6240, 131072, 4)
+(6240, 1024, 3)
+
+validation
+(338, 131072, 4)
+(338, 1024, 3)
+
+Test
+(444, 131072, 4)
+(444, 1024, 3)
+Train on 6240 samples, validate on 338 samples
+Epoch 1/20
+6240/6240 [==============================] - 2112s 338ms/step - loss: 1.0818 - model_1_loss: 1.1033 - lambda_2_loss: 1.0602 - model_1_correlation_multi: 0.0575 - model_1_r_sq_multi: -3.4405 - lambda_2_correlation_multi: 0.0675 - lambda_2_r_sq_multi: -3.3692 - val_loss: 1.0307 - val_model_1_loss: 0.9445 - val_lambda_2_loss: 1.1169 - val_model_1_correlation_multi: 0.0888 - val_model_1_r_sq_multi: -6.9386 - val_lambda_2_correlation_multi: 0.0578 - val_lambda_2_r_sq_multi: -11.1409
+
+Epoch 00001: val_loss improved from inf to 1.03070, saving model to ./saved_models/lr-4weights-improvement-01-1.03.hdf5
+Epoch 2/20
+6240/6240 [==============================] - 2095s 336ms/step - loss: 0.9006 - model_1_loss: 0.9026 - lambda_2_loss: 0.8985 - model_1_correlation_multi: 0.1205 - model_1_r_sq_multi: -2.2755 - lambda_2_correlation_multi: 0.1232 - lambda_2_r_sq_multi: -2.2622 - val_loss: 1.0141 - val_model_1_loss: 0.8415 - val_lambda_2_loss: 1.1867 - val_model_1_correlation_multi: 0.1044 - val_model_1_r_sq_multi: -5.1606 - val_lambda_2_correlation_multi: 0.0541 - val_lambda_2_r_sq_multi: -10.6824
+
+Epoch 00002: val_loss improved from 1.03070 to 1.01407, saving model to ./saved_models/lr-4weights-improvement-02-1.01.hdf5
+Epoch 3/20
+6240/6240 [==============================] - 2094s 336ms/step - loss: 0.8621 - model_1_loss: 0.8621 - lambda_2_loss: 0.8622 - model_1_correlation_multi: 0.1378 - model_1_r_sq_multi: -3.3214 - lambda_2_correlation_multi: 0.1351 - lambda_2_r_sq_multi: -3.1958 - val_loss: 1.0815 - val_model_1_loss: 1.2810 - val_lambda_2_loss: 0.8821 - val_model_1_correlation_multi: 0.1071 - val_model_1_r_sq_multi: -25.3319 - val_lambda_2_correlation_multi: 0.1163 - val_lambda_2_r_sq_multi: -8.5426
+
+Epoch 00003: val_loss did not improve from 1.01407
+Epoch 4/20
+1068/6240 [====>.........................] - ETA: 28:26 - loss: 0.8043 - model_1_loss: 0.8015 - lambda_2_loss: 0.8070 - model_1_correlation_multi: 0.1654 - model_1_r_sq_multi: -1.9304 - lambda_2_correlation_multi: 0.1524 - lambda_2_r_sq_multi: -1.8571^CTraceback (most recent call last):
+  File "model_att.py", line 495, in <module>
+    callbacks=callbacks_list
+  File "/home/ubuntu/anaconda3/envs/tensorflow_p36/lib/python3.6/site-packages/keras/engine/training.py", line 1039, in fit
+    validation_steps=validation_steps)
+  File "/home/ubuntu/anaconda3/envs/tensorflow_p36/lib/python3.6/site-packages/keras/engine/training_arrays.py", line 199, in fit_loop
+    outs = f(ins_batch)
+  File "/home/ubuntu/anaconda3/envs/tensorflow_p36/lib/python3.6/site-packages/keras/backend/tensorflow_backend.py", line 2715, in __call__
+    return self._call(inputs)
+  File "/home/ubuntu/anaconda3/envs/tensorflow_p36/lib/python3.6/site-packages/keras/backend/tensorflow_backend.py", line 2675, in _call
+    fetched = self._callable_fn(*array_vals)
+  File "/home/ubuntu/anaconda3/envs/tensorflow_p36/lib/python3.6/site-packages/tensorflow/python/client/session.py", line 1439, in __call__
+    run_metadata_ptr)
+KeyboardInterrupt

@@ -1,0 +1,55 @@
+Using TensorFlow backend.
+
+train
+(6240, 131072, 4)
+(6240, 1024, 3)
+
+validation
+(338, 131072, 4)
+(338, 1024, 3)
+
+Test
+(444, 131072, 4)
+(444, 1024, 3)
+Train on 6240 samples, validate on 338 samples
+Epoch 1/10
+6240/6240 [==============================] - 1593s 255ms/step - loss: 1.3876 - model_1_loss: 1.3485 - lambda_2_loss: 1.4268 - model_1_correlation_multi: nan - model_1_r_sq_multi: -2.5845 - lambda_2_correlation_multi: nan - lambda_2_r_sq_multi: -2.5934 - val_loss: 1.1110 - val_model_1_loss: 1.0766 - val_lambda_2_loss: 1.1455 - val_model_1_correlation_multi: nan - val_model_1_r_sq_multi: -8.2565 - val_lambda_2_correlation_multi: nan - val_lambda_2_r_sq_multi: -16.9730
+
+Epoch 00001: val_loss improved from inf to 1.11103, saving model to ./saved_models/bas-weights-improvement-01-1.11.hdf5
+Epoch 2/10
+6240/6240 [==============================] - 1572s 252ms/step - loss: 1.1013 - model_1_loss: 1.1083 - lambda_2_loss: 1.0943 - model_1_correlation_multi: nan - model_1_r_sq_multi: -2.8317 - lambda_2_correlation_multi: nan - lambda_2_r_sq_multi: -2.7317 - val_loss: 0.9915 - val_model_1_loss: 0.8250 - val_lambda_2_loss: 1.1581 - val_model_1_correlation_multi: nan - val_model_1_r_sq_multi: -0.4239 - val_lambda_2_correlation_multi: nan - val_lambda_2_r_sq_multi: -8.0406
+
+Epoch 00002: val_loss improved from 1.11103 to 0.99153, saving model to ./saved_models/bas-weights-improvement-02-0.99.hdf5
+Epoch 3/10
+6240/6240 [==============================] - 1571s 252ms/step - loss: 0.9063 - model_1_loss: 0.9056 - lambda_2_loss: 0.9071 - model_1_correlation_multi: nan - model_1_r_sq_multi: -1.0720 - lambda_2_correlation_multi: nan - lambda_2_r_sq_multi: -1.0864 - val_loss: 0.9213 - val_model_1_loss: 0.7418 - val_lambda_2_loss: 1.1008 - val_model_1_correlation_multi: nan - val_model_1_r_sq_multi: -0.5551 - val_lambda_2_correlation_multi: nan - val_lambda_2_r_sq_multi: -9.5106
+
+Epoch 00003: val_loss improved from 0.99153 to 0.92128, saving model to ./saved_models/bas-weights-improvement-03-0.92.hdf5
+Epoch 4/10
+6240/6240 [==============================] - 1571s 252ms/step - loss: 0.8066 - model_1_loss: 0.8049 - lambda_2_loss: 0.8083 - model_1_correlation_multi: nan - model_1_r_sq_multi: -0.5816 - lambda_2_correlation_multi: nan - lambda_2_r_sq_multi: -0.5646 - val_loss: 0.7139 - val_model_1_loss: 0.7200 - val_lambda_2_loss: 0.7077 - val_model_1_correlation_multi: nan - val_model_1_r_sq_multi: -0.4080 - val_lambda_2_correlation_multi: nan - val_lambda_2_r_sq_multi: -0.1695
+
+Epoch 00004: val_loss improved from 0.92128 to 0.71385, saving model to ./saved_models/bas-weights-improvement-04-0.71.hdf5
+Epoch 5/10
+6240/6240 [==============================] - 1570s 252ms/step - loss: 0.7700 - model_1_loss: 0.7694 - lambda_2_loss: 0.7706 - model_1_correlation_multi: nan - model_1_r_sq_multi: -0.3767 - lambda_2_correlation_multi: nan - lambda_2_r_sq_multi: -0.3528 - val_loss: 0.7374 - val_model_1_loss: 0.7961 - val_lambda_2_loss: 0.6787 - val_model_1_correlation_multi: nan - val_model_1_r_sq_multi: -1.6489 - val_lambda_2_correlation_multi: nan - val_lambda_2_r_sq_multi: 0.0515
+
+Epoch 00005: val_loss did not improve from 0.71385
+Epoch 6/10
+6240/6240 [==============================] - 1568s 251ms/step - loss: 0.7496 - model_1_loss: 0.7491 - lambda_2_loss: 0.7500 - model_1_correlation_multi: nan - model_1_r_sq_multi: -0.2787 - lambda_2_correlation_multi: nan - lambda_2_r_sq_multi: -0.2618 - val_loss: 0.7375 - val_model_1_loss: 0.6785 - val_lambda_2_loss: 0.7966 - val_model_1_correlation_multi: nan - val_model_1_r_sq_multi: 0.0523 - val_lambda_2_correlation_multi: nan - val_lambda_2_r_sq_multi: -1.1398
+
+Epoch 00006: val_loss did not improve from 0.71385
+Epoch 7/10
+6240/6240 [==============================] - 1567s 251ms/step - loss: 0.7415 - model_1_loss: 0.7409 - lambda_2_loss: 0.7420 - model_1_correlation_multi: nan - model_1_r_sq_multi: -0.2396 - lambda_2_correlation_multi: nan - lambda_2_r_sq_multi: -0.2161 - val_loss: 0.7661 - val_model_1_loss: 0.6765 - val_lambda_2_loss: 0.8558 - val_model_1_correlation_multi: nan - val_model_1_r_sq_multi: 0.0629 - val_lambda_2_correlation_multi: nan - val_lambda_2_r_sq_multi: -4.1664
+
+Epoch 00007: val_loss did not improve from 0.71385
+Epoch 8/10
+6240/6240 [==============================] - 1566s 251ms/step - loss: 0.7316 - model_1_loss: 0.7311 - lambda_2_loss: 0.7320 - model_1_correlation_multi: nan - model_1_r_sq_multi: -0.2188 - lambda_2_correlation_multi: nan - lambda_2_r_sq_multi: -0.2364 - val_loss: 0.7868 - val_model_1_loss: 0.9081 - val_lambda_2_loss: 0.6656 - val_model_1_correlation_multi: nan - val_model_1_r_sq_multi: -5.0336 - val_lambda_2_correlation_multi: nan - val_lambda_2_r_sq_multi: 0.0649
+
+Epoch 00008: val_loss did not improve from 0.71385
+Epoch 9/10
+6240/6240 [==============================] - 1567s 251ms/step - loss: 0.7229 - model_1_loss: 0.7234 - lambda_2_loss: 0.7225 - model_1_correlation_multi: nan - model_1_r_sq_multi: -0.2302 - lambda_2_correlation_multi: nan - lambda_2_r_sq_multi: -0.2184 - val_loss: 1.0008 - val_model_1_loss: 0.6743 - val_lambda_2_loss: 1.3272 - val_model_1_correlation_multi: nan - val_model_1_r_sq_multi: -0.0488 - val_lambda_2_correlation_multi: nan - val_lambda_2_r_sq_multi: -15.6489
+
+Epoch 00009: val_loss did not improve from 0.71385
+Epoch 10/10
+6240/6240 [==============================] - 1568s 251ms/step - loss: 0.7177 - model_1_loss: 0.7186 - lambda_2_loss: 0.7169 - model_1_correlation_multi: nan - model_1_r_sq_multi: -0.2140 - lambda_2_correlation_multi: nan - lambda_2_r_sq_multi: -0.2182 - val_loss: 0.7747 - val_model_1_loss: 0.6632 - val_lambda_2_loss: 0.8862 - val_model_1_correlation_multi: nan - val_model_1_r_sq_multi: 0.0608 - val_lambda_2_correlation_multi: nan - val_lambda_2_r_sq_multi: -2.9902
+
+Epoch 00010: val_loss did not improve from 0.71385
+444/444 [==============================] - 35s 79ms/step
