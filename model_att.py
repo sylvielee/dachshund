@@ -379,8 +379,8 @@ od5 = concatenate([od4, dd5])
 atn = MultiHead(AttentionDilated(attn_units, dilation_rate=attn_dilation), layer_num=attn_heads)(od5)
 dat = Dropout(attn_dropout)(atn)
 fat = TimeDistributed(Flatten())(dat)
-sat = TimeDistributed(Dense(256, activation='relu'))(fat)
-oat = concatenate([sat, od5])
+# sat = TimeDistributed(Dense(256, activation='relu'))(fat)
+oat = concatenate([fat, od5])
 
 out = TimeDistributed(Dense(3, activation='relu'))(oat)
 
