@@ -534,7 +534,7 @@ model_bi.compile(
 
 # checkpoint
 save_filepath = "./saved_models/"
-filepath= save_filepath + "bas-weights-improvement-{epoch:02d}-{val_acc:.2f}.hdf5"
+filepath= save_filepath + "bas-weights-improvement-{epoch:02d}-{val_loss:.2f}.hdf5"
 checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
 callbacks_list = [checkpoint]
 
