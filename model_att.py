@@ -4,6 +4,7 @@ import numpy as np
 from keras.layers import Layer, Conv1D, MaxPool1D, Dropout, BatchNormalization, Activation, Dense, TimeDistributed, Input, concatenate, Flatten, Lambda
 from keras.utils.io_utils import HDF5Matrix
 from keras.models import load_model, Model
+from keras.callbacks import ModelCheckpoint
 from keras import metrics, backend as K
 
 import tensorflow as tf
@@ -480,18 +481,24 @@ model_bi.compile(
 
 # keras.utils.plot_model(model, to_file='model_att.png') ####
 
+# checkpoint
+save_filepath = "./saved_models/"
+filepath= save_filepath + "att-weights-improvement-{epoch:02d}-{val_loss:.2f}.hdf5"
+checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+callbacks_list = [checkpoint]
+
 model_bi.fit(
     X_train, 
     [y_train, y_train], 
     validation_data=(X_valid, [y_valid, y_valid]), 
     shuffle='batch', 
     epochs=7, 
-    batch_size=batch_size
+    batch_size=batch_size,
+    callbacks=callbacks_list
 )
 model_bi.evaluate(X_test, [y_test, y_test], batch_size=batch_size)
 
 # save the model 
-save_filepath = "./saved_models/"
 model_name = "attention.h5"
 model_bi.save(save_filepath+model_name)
 
