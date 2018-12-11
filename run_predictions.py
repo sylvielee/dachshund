@@ -38,33 +38,58 @@ def load_and_predict(is_checkpoint, filename, output_dir):
         # write predictions to file
         np.save(output_dir+"/y_predictions.npy", y_predictions)
 
-    # create_prediction_histograms(y_predictions, y_train, output_dir)
+    create_prediction_histograms(y_predictions, y_train, output_dir)
 
     print('finished successfully!')
     
 
 def create_prediction_histograms(predictions, experiments, output_dir):
     predictions = np.array(predictions)
-    preds = np.reshape(predictions, (predictions.shape[0]*predictions.shape[1]*predictions.shape[2], predictions.shape[3]))
-    class_one = preds[:, 0]
-    class_two = preds[:, 1]
-    class_three = preds[:, 2]
+    preds = np.reshape(predictions, (predictions.shape[0], predictions.shape[1]*predictions.shape[2], predictions.shape[3]))
+    ind=0
+    class_one = preds[ind, :, 0]
+    class_two = preds[ind, :, 1]
+    class_three = preds[ind, :, 2]
 
+    experiments = np.array(experiments)
+    exps = np.reshape(experiments, (experiments.shape[0]*experiments.shape[1], experiments.shape[2]))
+    exp_one = exps[:, 0]
+    exp_two = exps[:, 1]
+    exp_three = exps[:, 2]
+
+    print("predictions/experiments shape")
     print(predictions.shape)
-    print(class_one.shape)
     print(experiments.shape)
 
+    print("preds/exps shape")
+    print(preds.shape)
+    print(exps.shape)
+
+    print("\nclass one/exp one shape")
+    print(class_three.shape)
+    print(exp_three.shape)
+
+    xaxis = np.array([i for i in range(class_one.shape[0])])
+
     if sum(class_one) != 0:
-        fig_one = seaborn.distplot(class_one, color='b').get_figure()
-        fig_one.savefig(output_dir+'/pred_class_one_hist.png')
+        fig_one_p = seaborn.distplot(class_one, color='b', kde=False).get_figure()
+        fig_one_p.savefig(output_dir+'/pred_class_one_hist.png')
+        fig_one_e = seaborn.distplot(exp_one, color='lightskyblue').get_figure()
+        fig_one_e.savefig(output_dir+'/exp_class_one_hist.png')
 
     if sum(class_two) != 0:
-        fig_two = seaborn.distplot(class_two, color='r').get_figure()
-        fig_one.savefig(output_dir+'/pred_class_one_hist.png')
+        fig_two_p = seaborn.distplot(class_two, color='r').get_figure()
+        fig_two_p.savefig(output_dir+'/pred_class_two_hist.png')
+        fig_two_e = seaborn.distplot(exp_two, color='salmon').get_figure()
+        fig_two_e.savefig(output_dir+'/exp_class_two_hist.png')
 
     if sum(class_three) != 0:
-        fig_three = seaborn.distplot(class_three, color='g').get_figure()
-        fig_three.savefig(output_dir+'/pred_class_one_hist.png')
+        #fig_three = seaborn.distplot(class_three, color='g', hist=True, kde=False).get_figure()
+        fig_three = seaborn.barplot(xaxis, class_three, color='g').get_figure()
+
+        fig_three.savefig(output_dir+'/pred_class_three_hist.png')
+        fig_three_e = seaborn.distplot(exp_three, color='lightgreen', hist=True, kde=False).get_figure()
+        fig_three_e.savefig(output_dir+'/exp_class_three_hist.png')
 
 def create_scatterplot(predictions, experiments, output_dir):
     predictions = np.array(predictions)
