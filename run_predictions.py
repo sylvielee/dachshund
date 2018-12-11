@@ -55,7 +55,7 @@ def load_and_predict(is_checkpoint, filename, output_dir, use_train, use_bas=Fal
         np.save(output_dir+"/y_predictions.npy", y_predictions)
 
     print("creating plots")
-    #create_prediction_histograms(y_predictions, Y, output_dir)
+    create_prediction_histograms(y_predictions, Y, output_dir)
     print("bar graphs done")
     create_scatterplot(y_predictions, Y, output_dir)
     print("scatters done")
@@ -244,7 +244,7 @@ def create_scatterplot(predictions, experiments, output_dir):
         # frame1 = plt.gca()
         # frame1.axes.get_xaxis().set_visible(False)
         # frame1.axes.get_yaxis().set_visible(False)  
-        seaborn.regplot(class_three, exp_three, scatter=True, logx=True, color='g').get_figure()
+        seaborn.regplot(class_three, exp_three, scatter=True, logx=True, color='b').get_figure()
         plt.xlabel("log2 prediction")
         plt.ylabel("log2 experiment")
         plt.tight_layout()
