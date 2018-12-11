@@ -167,7 +167,7 @@ def create_scatterplot(predictions, experiments, output_dir):
     class_one = np.reshape(class_one, (class_one.shape[0]*class_one.shape[1], 1)).flatten()
 
     class_two = predictions[ind, :, :, 1]
-    class_two = np.reshape(class_two, (class_two.shape[0]*class_two.shape[1], 1)).flatten()
+    class_two = np.reshape(class_two, (class_two.shape[0]*class_two.shape[1], 1)).flatten() 
 
     class_three = predictions[ind, :, :, 2]
     class_three = np.reshape(class_three, (class_three.shape[0]*class_three.shape[1], 1)).flatten()
@@ -178,22 +178,25 @@ def create_scatterplot(predictions, experiments, output_dir):
     c3 = sum(class_three) != 0
 
     if c1:
+        class_one += 1
         class_one /= np.linalg.norm(predictions[ind, :, :, 0])
     if c2:
+        class_two += 1
         class_two /= np.linalg.norm(predictions[ind, :, :, 1])
     if c3:
+        class_three += 1
         class_three /= np.linalg.norm(predictions[ind, :, :, 2])
 
     exp_one = experiments[:, :, 0]/np.linalg.norm(experiments[:, :, 0])
-    exp_one = np.reshape(exp_one, (exp_one.shape[0]*exp_one.shape[1], 1)).flatten()
+    exp_one = np.reshape(exp_one, (exp_one.shape[0]*exp_one.shape[1], 1)).flatten() + 1
     exp_one /= np.linalg.norm(exp_one)
 
     exp_two = experiments[:, :, 1]/np.linalg.norm(experiments[:, :, 1])
-    exp_two = np.reshape(exp_two, (exp_two.shape[0]*exp_two.shape[1], 1)).flatten()
+    exp_two = np.reshape(exp_two, (exp_two.shape[0]*exp_two.shape[1], 1)).flatten() + 1
     exp_two /= np.linalg.norm(exp_two)
 
     exp_three = experiments[:, :, 2]/np.linalg.norm(experiments[:, :, 2])
-    exp_three = np.reshape(exp_three, (exp_three.shape[0]*exp_three.shape[1], 1)).flatten()
+    exp_three = np.reshape(exp_three, (exp_three.shape[0]*exp_three.shape[1], 1)).flatten() + 1
     exp_three /= np.linalg.norm(exp_three)
 
     # bc it takes too long, cut it short 
