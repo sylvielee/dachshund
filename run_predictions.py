@@ -71,7 +71,7 @@ def create_prediction_histograms(predictions, experiments, output_dir):
 
     experiments = np.array(experiments, dtype=float)
     f = int(predictions.shape[1]/num_try)
-    clips = [i*f for in i in range(num_try)]
+    clips = [i*f for i in i in range(num_try)]
 
     hist_folder = '/hists'
     if not os.path.exists(output_dir+hist_folder):
