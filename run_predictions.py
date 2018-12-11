@@ -7,26 +7,99 @@ from helper import correlation_multi, r_sq_multi, create_att_model, poisson_mult
 
 import sys
 import os
-
+import seaborn
+import numpy as np
+from matplotlib import pyplot as plt
 
 def load_and_predict(is_checkpoint, filename, output_dir):
-    print("Keras version: " + keras.__version__)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
     model = get_model(is_checkpoint, filename)
 
     batch_size = 4
     data_file = "./data/new_heart_l131k.h5"
-    train_small = batch_size*10
-    X_train = HDF5Matrix(data_file, 'train_in', start=0, end =train_small)
-    # X_train = HDF5Matrix(data_file, 'train_in')
+    train_small = batch_size*100
+    # X_train = HDF5Matrix(data_file, 'train_in', start=0, end =train_small)
+    X_train = HDF5Matrix(data_file, 'train_in')
+    # y_train = HDF5Matrix(data_file, 'train_out', start=0, end=train_small)
     y_train = HDF5Matrix(data_file, 'train_out')
 
     X_test = HDF5Matrix(data_file, 'test_in')
     y_test = HDF5Matrix(data_file, 'test_out')
 
-    y_predictions = model.predict(X_train, batch_size=batch_size)
-    print(y_predictions)
+    y_predictions = None
+    if os.path.exists(output_dir+"/y_predictions.npy"):
+        print("loading prediction")
+        y_predictions = np.load(output_dir+"/y_predictions.npy")
+    else: 
+        print("predicting")
+        y_predictions = model.predict(X_train, batch_size=batch_size)
+        # write predictions to file
+        np.save(output_dir+"/y_predictions.npy", y_predictions)
+
+    # create_prediction_histograms(y_predictions, y_train, output_dir)
+
+    print('finished successfully!')
     
+
+def create_prediction_histograms(predictions, experiments, output_dir):
+    predictions = np.array(predictions)
+    preds = np.reshape(predictions, (predictions.shape[0]*predictions.shape[1]*predictions.shape[2], predictions.shape[3]))
+    class_one = preds[:, 0]
+    class_two = preds[:, 1]
+    class_three = preds[:, 2]
+
+    print(predictions.shape)
+    print(class_one.shape)
+    print(experiments.shape)
+
+    if sum(class_one) != 0:
+        fig_one = seaborn.distplot(class_one, color='b').get_figure()
+        fig_one.savefig(output_dir+'/pred_class_one_hist.png')
+
+    if sum(class_two) != 0:
+        fig_two = seaborn.distplot(class_two, color='r').get_figure()
+        fig_one.savefig(output_dir+'/pred_class_one_hist.png')
+
+    if sum(class_three) != 0:
+        fig_three = seaborn.distplot(class_three, color='g').get_figure()
+        fig_three.savefig(output_dir+'/pred_class_one_hist.png')
+
+def create_scatterplot(predictions, experiments, output_dir):
+    predictions = np.array(predictions)
+    preds = np.reshape(predictions, (predictions.shape[0]*predictions.shape[1]*predictions.shape[2], predictions.shape[3]))
+    # class_one = np.log(change_zeros(preds[:, 0]))
+    # class_two = np.log(change_zeros(preds[:, 1]))
+    # class_three = np.log(change_zeros(preds[:, 2]))
+    class_one = preds[:, 0]
+    class_two = preds[:, 1]
+    class_three = preds[:, 2]
+
+    exps = np.reshape(experiments, (experiments.shape[0]*experiments.shape[1], experiments.shape[2]))
+    # exp_one =  np.log(change_zeros(exps[:, 0]))
+    # exp_two =  np.log(change_zeros(exps[:, 1]))
+    # exp_three =  np.log(change_zeros(exps[:, 2]))
+    exp_one =  exps[:, 0]
+    exp_two =  exps[:, 1]
+    exp_three =  exps[:, 2]
+
+    fig_one = seaborn.regplot(class_one, exp_one, scatter=True, logx=True, color='b').get_figure()
+    fig_two = seaborn.regplot(class_two, exp_two, scatter=True, logx=True, color='r').get_figure()
+    fig_three = seaborn.regplot(class_three, exp_three, scatter=True, logx=True, color='g').get_figure()
+
+    fig_one.savefig(output_dir+'/class_one_scatter.png')
+    fig_two.savefig(output_dir+'/class_two_scatter.png')
+    fig_three.savefig(output_dir+'/class_three_scatter.png')
+
+
+# for log to replace NaN with zeros
+def change_zeros(x):
+    for i in range(len(x)):
+        if x[i] == 0:
+            x[i] = 1
+
+
 def get_model(is_checkpoint, filename):
     if is_checkpoint:
         model = create_att_model()
@@ -52,9 +125,9 @@ if __name__=='__main__':
 
     if int(sys.argv[1]) == 0:
         # using a checkpoint
-        print('loading checkpoint from %s' % sys.argv[3])
+        print('evaluating checkpoint from %s' % sys.argv[3])
         load_and_predict(True, sys.argv[3], sys.argv[4])
     else:
         # using a model
-        print('loading model from %s' % sys.argv[2])
+        print('evaluating model from %s' % sys.argv[2])
         load_and_predict(False, sys.argv[2], sys.argv[4])
