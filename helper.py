@@ -418,3 +418,272 @@ def create_att_model():
 
     model_bi = Model(inputs=seq_forward, outputs=[output_forward, output_back])
     return model_bi
+
+def create_bas_model():
+    conv_dropout = 0.1 
+    strides = 1 # needed to set dilation
+    attn_units = 48
+    attn_heads = 8
+    attn_dropout = 0.1
+    attn_dilation = 16
+    # will expect AGTC 1-hot encoding
+    seqs = Input(shape=(None, 4))
+
+    # CNN
+
+    # cnn_filter_sizes    20
+    # cnn_filters    128
+    # cnn_pool    2
+    # cnn_dilation    1
+    # cnn_dense   0
+    c1 = Conv1D(
+        128, 
+        kernel_size=20, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=1
+    )(seqs)
+    b1 = BatchNormalization()(c1)
+    a1 = Activation('relu')(b1)
+    d1 = Dropout(conv_dropout)(a1)
+    p1 = MaxPool1D(2)(d1)
+
+    # cnn_filter_sizes    7
+    # cnn_filters    128
+    # cnn_pool    4
+    # cnn_dilation    1
+    # cnn_dense   0
+    c2 = Conv1D(
+        128, 
+        kernel_size=7, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=1
+    )(p1)
+    b2 = BatchNormalization()(c2)
+    a2 = Activation('relu')(b2)
+    d2 = Dropout(conv_dropout)(a2)
+    p2 = MaxPool1D(4)(d2)
+
+    # cnn_filter_sizes    7
+    # cnn_filters    192
+    # cnn_pool    4
+    # cnn_dilation    1
+    # cnn_dense   0
+    c3 = Conv1D(
+        192, 
+        kernel_size=7, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=1
+    )(p2)
+    b3 = BatchNormalization()(c3)
+    a3 = Activation('relu')(b3)
+    d3 = Dropout(conv_dropout)(a3)
+    p3 = MaxPool1D(4)(d3)
+
+    # cnn_filter_sizes    7
+    # cnn_filters    256
+    # cnn_pool    4
+    # cnn_dilation    1
+    # cnn_dense   0
+    c4 = Conv1D(
+        256, 
+        kernel_size=7, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=1
+    )(p3)
+    b4 = BatchNormalization()(c4)
+    a4 = Activation('relu')(b4)
+    d4 = Dropout(conv_dropout)(a4)
+    p4 = MaxPool1D(4)(d4)
+
+    # cnn_filter_sizes    3
+    # cnn_filters    256
+    # cnn_pool    1
+    # cnn_dilation    1
+    # cnn_dense   0
+    c5 = Conv1D(
+        256, 
+        kernel_size=3, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=1
+    )(p4)
+    b5 = BatchNormalization()(c5)
+    a5 = Activation('relu')(b5)
+    d5 = Dropout(conv_dropout)(a5)
+    p5 = MaxPool1D(1)(d5)
+
+    # Dilated CNN
+
+    # cnn_filter_sizes    3
+    # cnn_filters    32
+    # cnn_pool    0
+    # cnn_dilation    2
+    # cnn_dense   1
+    cd1 = Conv1D(
+        32, 
+        kernel_size=3, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=2
+    )(p5)
+    bd1 = BatchNormalization()(cd1)
+    ad1 = Activation('relu')(bd1)
+    dd1 = Dropout(conv_dropout)(ad1)
+    od1 = concatenate([p5, dd1])
+
+    # cnn_filter_sizes    3
+    # cnn_filters    32
+    # cnn_pool    0
+    # cnn_dilation    4
+    # cnn_dense   1
+    cd2 = Conv1D(
+        32, 
+        kernel_size=3, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=4
+    )(od1)
+    bd2 = BatchNormalization()(cd2)
+    ad2 = Activation('relu')(bd2)
+    dd2 = Dropout(conv_dropout)(ad2)
+    od2 = concatenate([od1, dd2])
+
+    # cnn_filter_sizes    3
+    # cnn_filters    32
+    # cnn_pool    0
+    # cnn_dilation    8
+    # cnn_dense   1
+    cd3 = Conv1D(
+        32, 
+        kernel_size=3, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=8
+    )(od2)
+    bd3 = BatchNormalization()(cd3)
+    ad3 = Activation('relu')(bd3)
+    dd3 = Dropout(conv_dropout)(ad3)
+    od3 = concatenate([od2, dd3])
+
+    # cnn_filter_sizes    3
+    # cnn_filters    32
+    # cnn_pool    0
+    # cnn_dilation    16
+    # cnn_dense   1
+    cd4 = Conv1D(
+        32, 
+        kernel_size=3, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=16
+    )(od3)
+    bd4 = BatchNormalization()(cd4)
+    ad4 = Activation('relu')(bd4)
+    dd4 = Dropout(conv_dropout)(ad4)
+    od4 = concatenate([od3, dd4])
+
+    # cnn_filter_sizes    3
+    # cnn_filters    32
+    # cnn_pool    0
+    # cnn_dilation    16
+    # cnn_dense   1
+    cd5 = Conv1D(
+        32, 
+        kernel_size=3, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=16
+    )(od4)
+    bd5 = BatchNormalization()(cd5)
+    ad5 = Activation('relu')(bd5)
+    dd5 = Dropout(conv_dropout)(ad5)
+    od5 = concatenate([od4, dd5])
+
+    # cnn_filter_sizes    3
+    # cnn_filters    32
+    # cnn_pool    0
+    # cnn_dilation    16
+    # cnn_dense   1
+    cd6 = Conv1D(
+        32, 
+        kernel_size=3, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=16
+    )(od5)
+    bd6 = BatchNormalization()(cd6)
+    ad6 = Activation('relu')(bd6)
+    dd6 = Dropout(conv_dropout)(ad6)
+    od6 = concatenate([od5, dd6])
+
+    # cnn_filter_sizes    3
+    # cnn_filters    32
+    # cnn_pool    0
+    # cnn_dilation    16
+    # cnn_dense   1
+    cd7 = Conv1D(
+        32, 
+        kernel_size=3, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=16
+    )(od6)
+    bd7 = BatchNormalization()(cd7)
+    ad7 = Activation('relu')(bd7)
+    dd7 = Dropout(conv_dropout)(ad7)
+    od7 = concatenate([od6, dd7])
+
+    # cnn_filter_sizes    3
+    # cnn_filters    32
+    # cnn_pool    0
+    # cnn_dilation    16
+    # cnn_dense   1
+    cd8 = Conv1D(
+        32, 
+        kernel_size=3, 
+        strides=strides, 
+        activation=None, 
+        padding='same', 
+        dilation_rate=16
+    )(od7)
+    bd8 = BatchNormalization()(cd8)
+    ad8 = Activation('relu')(bd8)
+    dd8 = Dropout(conv_dropout)(ad8)
+    od8 = concatenate([od7, dd8])
+
+    # Self-Attention Layer
+
+    # atn = MultiHead(AttentionDilated(attn_units, dilation_rate=attn_dilation), layer_num=attn_heads)(od4)
+    # dat = Dropout(attn_dropout)(atn)
+    # fat = TimeDistributed(Flatten())(dat)
+    # oat = concatenate([fat, od4])
+
+    out = TimeDistributed(Dense(3, activation='relu'))(od8)
+
+    # define model
+    model = Model(inputs=seqs, outputs=out)
+
+    seq_forward = Input(shape=(None, 4))
+    seq_revcomp = Lambda(rev_comp)(seq_forward)
+
+    output_forward = model(seq_forward)
+    output_revcomp = model(seq_revcomp)
+    output_back = Lambda(lambda x: K.reverse(x, -2))(output_revcomp)
+
+    return Model(inputs=seq_forward, outputs=[output_forward, output_back])

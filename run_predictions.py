@@ -3,7 +3,7 @@ from keras.models import load_model, Model
 from keras.utils.io_utils import HDF5Matrix
 from keras_multi_head import MultiHead
 
-from helper import correlation_multi, r_sq_multi, create_att_model, poisson_multi, AttentionDilated
+from helper import correlation_multi, r_sq_multi, create_att_model, poisson_multi, AttentionDilated, create_bas_model
 
 import sys
 import os
@@ -12,30 +12,37 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy import stats
 
-def load_and_predict(is_checkpoint, filename, output_dir, use_train):
+def load_and_predict(is_checkpoint, filename, output_dir, use_train, use_bas=False):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    model = get_model(is_checkpoint, filename)
+    model = get_model(is_checkpoint, filename, use_bas)
 
     batch_size = 4
     data_file = "./data/new_heart_l131k.h5"
-    train_small = batch_size*100
-    # X_train = HDF5Matrix(data_file, 'train_in', start=0, end =train_small)
-    X_train = HDF5Matrix(data_file, 'train_in')
-    # y_train = HDF5Matrix(data_file, 'train_out', start=0, end=train_small)
-    y_train = HDF5Matrix(data_file, 'train_out')
+    train_small = batch_size*10
+    X_train = HDF5Matrix(data_file, 'train_in', start=0, end =train_small)
+    y_train = HDF5Matrix(data_file, 'train_out', start=0, end=train_small)
+    # X_train = HDF5Matrix(data_file, 'train_in')
+    # y_train = HDF5Matrix(data_file, 'train_out')
 
-    X_test = HDF5Matrix(data_file, 'test_in')
-    y_test = HDF5Matrix(data_file, 'test_out')
+    test_small = batch_size*10
+    X_test = HDF5Matrix(data_file, 'test_in', start=0, end=test_small)
+    y_test = HDF5Matrix(data_file, 'test_out', start=0, end=test_small)
+    # X_test = HDF5Matrix(data_file, 'test_in')
+    # y_test = HDF5Matrix(data_file, 'test_out')
 
     X, Y = None, None
     if use_train:
+        print("using train")
         X = X_train
         Y = y_train
     else:
+        print("using test")
         X = X_test
         Y = y_test
+        print(X.shape)
+        print(Y.shape)
 
     y_predictions = None
     if os.path.exists(output_dir+"/y_predictions.npy"):
@@ -47,8 +54,11 @@ def load_and_predict(is_checkpoint, filename, output_dir, use_train):
         # write predictions to file
         np.save(output_dir+"/y_predictions.npy", y_predictions)
 
-    # create_prediction_histograms(y_predictions, Y, output_dir)
+    print("creating plots")
+    #create_prediction_histograms(y_predictions, Y, output_dir)
+    print("bar graphs done")
     create_scatterplot(y_predictions, Y, output_dir)
+    print("scatters done")
     create_pdf_graph(y_predictions, Y, output_dir)
 
     print('finished successfully!')
@@ -56,87 +66,222 @@ def load_and_predict(is_checkpoint, filename, output_dir, use_train):
 
 def create_prediction_histograms(predictions, experiments, output_dir):
     predictions = np.array(predictions)
-    preds = np.reshape(predictions, (predictions.shape[0], predictions.shape[1]*predictions.shape[2], predictions.shape[3]))
+    #preds = np.reshape(predictions, (predictions.shape[0], predictions.shape[1]*predictions.shape[2], predictions.shape[3]))
+    num_try = 10
     ind=0
-    class_one = preds[ind, :, 0]
-    class_two = preds[ind, :, 1]
-    class_three = preds[ind, :, 2]
 
-    experiments = np.array(experiments)
-    exps = np.reshape(experiments, (experiments.shape[0]*experiments.shape[1], experiments.shape[2]))
-    exp_one = exps[:, 0]
-    exp_two = exps[:, 1]
-    exp_three = exps[:, 2]
+    print(experiments[0])
+    experiments = np.array(experiments, dtype=float)
+    num_clips = predictions.shape[1]
 
-    print("predictions/experiments shape")
+    hist_folder = '/hists'
+    if not os.path.exists(output_dir+hist_folder):
+        os.makedirs(output_dir+hist_folder)
+    output_dir += hist_folder
+
+    # print("predictions/experiments shape")
+    # print(predictions.shape)
+    # print(experiments.shape)
+
+    # print("\npreds/exps shape")
+    # print(preds.shape)
+    # print(exps.shape)
+
+    # print("\nclass one/exp one shape")
+    # print(class_three.shape)
+    # print(exp_three.shape)
+
+    limit = 100 # predictions.shape[2]
+    xaxis = np.array([i for i in range(limit)])
+    print("x axis is ", limit)
+
+    for i in range(num_try):
+        clip = np.random.randint(0, num_clips)
+
+        class_one = predictions[ind, clip, :limit, 0]
+        class_two = predictions[ind, clip, :limit, 1]
+        class_three = predictions[ind, clip, :limit, 2]
+
+        exp_one = experiments[clip, :limit, 0]
+        exp_two = experiments[clip, :limit, 1]
+        exp_three = experiments[clip, :limit, 2]
+
+        # print("\nclass three/exp three shape")
+        # print(class_three.shape)
+        # print(exp_three.shape)
+
+        # print("clip: ", clip)
+        # print(exp_three)
+
+        # print("avg: ", np.mean(exp_three))
+
+        if sum(class_one) != 0:
+            plt.figure(figsize=(10,2))
+            frame1 = plt.gca()
+            frame1.axes.get_xaxis().set_visible(False)
+            frame1.axes.get_yaxis().set_visible(False)
+
+            seaborn.barplot(class_one, color='b', kde=False).get_figure()
+            plt.savefig(output_dir+'/%d_pred_class_one_hist.png' % clip)
+            plt.clf()
+
+            plt.figure(figsize=(10,2))
+            frame1 = plt.gca()
+            frame1.axes.get_xaxis().set_visible(False)
+            frame1.axes.get_yaxis().set_visible(False)
+
+            seaborn.barplot(exp_one, color='lightskyblue').get_figure()
+            plt.savefig(output_dir+'/%d_exp_class_one_hist.png' % clip)
+            plt.clf()
+
+        if sum(class_two) != 0:
+            plt.figure(figsize=(10,2))
+            frame1 = plt.gca()
+            frame1.axes.get_xaxis().set_visible(False)
+            frame1.axes.get_yaxis().set_visible(False)
+
+            seaborn.barplot(class_two, color='r').get_figure()
+            plt.savefig(output_dir+'/%d_pred_class_two_hist.png' % clip)
+            plt.clf()
+
+
+            plt.figure(figsize=(10,2))
+            frame1 = plt.gca()
+            frame1.axes.get_xaxis().set_visible(False)
+            frame1.axes.get_yaxis().set_visible(False)
+
+            seaborn.barplot(exp_two, color='salmon').get_figure()
+            plt.savefig(output_dir+'/%d_exp_class_two_hist.png' % clip)
+            plt.clf()
+
+        if sum(class_three) != 0:
+            plt.figure(figsize=(10,2))
+            frame1 = plt.gca()
+            frame1.axes.get_xaxis().set_visible(False)
+            frame1.axes.get_yaxis().set_visible(False)
+
+            seaborn.barplot(xaxis, class_three, color='g')
+            plt.savefig(output_dir+'/%d_pred_class_three_hist.png' % clip)
+            plt.clf()
+
+            plt.figure(figsize=(10,2))
+            frame1 = plt.gca()
+            frame1.axes.get_xaxis().set_visible(False)
+            frame1.axes.get_yaxis().set_visible(False)
+
+            seaborn.barplot(xaxis, exp_three, color='lightgreen')
+            plt.savefig(output_dir+'/%d_exp_class_three_hist.png' % clip)
+            plt.clf()
+
+def create_scatterplot(predictions, experiments, output_dir):
     print(predictions.shape)
     print(experiments.shape)
 
-    print("preds/exps shape")
-    print(preds.shape)
-    print(exps.shape)
-
-    print("\nclass one/exp one shape")
-    print(class_three.shape)
-    print(exp_three.shape)
-
-    xaxis = np.array([i for i in range(class_one.shape[0])])
-
-    if sum(class_one) != 0:
-        fig_one_p = seaborn.distplot(class_one, color='b', kde=False).get_figure()
-        fig_one_p.savefig(output_dir+'/pred_class_one_hist.png')
-        fig_one_e = seaborn.distplot(exp_one, color='lightskyblue').get_figure()
-        fig_one_e.savefig(output_dir+'/exp_class_one_hist.png')
-
-    if sum(class_two) != 0:
-        fig_two_p = seaborn.distplot(class_two, color='r').get_figure()
-        fig_two_p.savefig(output_dir+'/pred_class_two_hist.png')
-        fig_two_e = seaborn.distplot(exp_two, color='salmon').get_figure()
-        fig_two_e.savefig(output_dir+'/exp_class_two_hist.png')
-
-    if sum(class_three) != 0:
-        #fig_three = seaborn.distplot(class_three, color='g', hist=True, kde=False).get_figure()
-        fig_three = seaborn.barplot(xaxis, class_three, color='g').get_figure()
-
-        fig_three.savefig(output_dir+'/pred_class_three_hist.png')
-        fig_three_e = seaborn.distplot(exp_three, color='lightgreen', hist=True, kde=False).get_figure()
-        fig_three_e.savefig(output_dir+'/exp_class_three_hist.png')
-
-def create_scatterplot(predictions, experiments, output_dir):
-    predictions = np.array(predictions)
-    preds = np.reshape(predictions, (predictions.shape[0], predictions.shape[1]*predictions.shape[2], predictions.shape[3]))
+    predictions = np.array(predictions, dtype=float)
+    num_try = 1
     ind=0
-    class_one = preds[ind, :, 0]
-    class_two = preds[ind, :, 1]
-    class_three = preds[ind, :, 2]
 
-    experiments = np.array(experiments)
-    exps = np.reshape(experiments, (experiments.shape[0]*experiments.shape[1], experiments.shape[2]))
-    exp_one = exps[:, 0]
-    exp_two = exps[:, 1]
-    exp_three = exps[:, 2]
+    print(experiments[0])
+    experiments = np.array(experiments, dtype=float)
+    num_clips = predictions.shape[1]
 
-    fig_one = seaborn.regplot(class_one, exp_one, scatter=True, logx=True, color='b').get_figure()
-    fig_two = seaborn.regplot(class_two, exp_two, scatter=True, logx=True, color='r').get_figure()
-    fig_three = seaborn.regplot(class_three, exp_three, scatter=True, logx=True, color='g').get_figure()
+    scatter_folder = '/scatters'
+    if not os.path.exists(output_dir+scatter_folder):
+        os.makedirs(output_dir+scatter_folder)
+    output_dir += scatter_folder
 
-    fig_one.savefig(output_dir+'/class_one_scatter.png')
-    fig_two.savefig(output_dir+'/class_two_scatter.png')
-    fig_three.savefig(output_dir+'/class_three_scatter.png')
+    limit = predictions.shape[2]
+
+    for i in range(num_try):
+        clip = np.random.randint(0, num_clips)
+
+        class_one = predictions[ind, :, :limit, 0]
+        class_one = np.reshape(class_one, (class_one.shape[0]*class_one.shape[1], 1)).flatten()
+
+        class_two = predictions[ind, :, :limit, 1]
+        class_two = np.reshape(class_two, (class_two.shape[0]*class_two.shape[1], 1)).flatten()
+
+        class_three = predictions[ind, :, :limit, 2]
+        class_three = np.reshape(class_three, (class_three.shape[0]*class_three.shape[1], 1)).flatten()
+
+
+        c1 = sum(class_one) != 0
+        c2 = sum(class_two) != 0
+        c3 = sum(class_three) != 0
+
+        if c1:
+            class_one /= np.linalg.norm(predictions[ind, :, :limit, 0])
+        if c2:
+            class_two /= np.linalg.norm(predictions[ind, :, :limit, 1])
+        if c3:
+            class_three /= np.linalg.norm(predictions[ind, :, :limit, 2])
+
+        print("\nHERE")
+        print(class_three.shape)
+
+        exp_one = experiments[:, :limit, 0]/np.linalg.norm(experiments[:, :limit, 0])
+        exp_one = np.reshape(exp_one, (exp_one.shape[0]*exp_one.shape[1], 1)).flatten()
+
+        exp_two = experiments[:, :limit, 1]/np.linalg.norm(experiments[:, :limit, 1])
+        exp_two = np.reshape(exp_two, (exp_two.shape[0]*exp_two.shape[1], 1)).flatten()
+
+        exp_three = experiments[:, :limit, 2]/np.linalg.norm(experiments[:, :limit, 2])
+        exp_three = np.reshape(exp_three, (exp_three.shape[0]*exp_three.shape[1], 1)).flatten()
+
+        print(exp_three.shape)
+
+        if c1:
+            # plt.figure(figsize=(10,2))
+            frame1 = plt.gca()
+            frame1.axes.get_xaxis().set_visible(False)
+            frame1.axes.get_yaxis().set_visible(False)
+            seaborn.regplot(class_one, exp_one, scatter=True, logx=True, color='b')
+            plt.savefig(output_dir+('/%d_class_one_scatter.png'%clip))
+            plt.clf()
+
+        if c2:
+            # plt.figure(figsize=(10,2))
+            frame1 = plt.gca()
+            frame1.axes.get_xaxis().set_visible(False)
+            frame1.axes.get_yaxis().set_visible(False)
+            seaborn.regplot(class_two, exp_two, scatter=True, logx=True, color='r')
+            plt.savefig(output_dir+('/%d_class_two_scatter.png'%clip))
+            plt.clf()
+
+        if c3:
+            # plt.figure(figsize=(10,2))
+            frame1 = plt.gca()
+            frame1.axes.get_xaxis().set_visible(False)
+            frame1.axes.get_yaxis().set_visible(False)  
+            seaborn.regplot(class_three, exp_three, scatter=True, logx=True, color='g').get_figure()
+            plt.savefig(output_dir+('/%d_class_three_scatter.png'%clip))
+            plt.clf()
 
 def create_pdf_graph(predictions, experiments, output_dir):
     predictions = np.array(predictions)
-    preds = np.reshape(predictions, (predictions.shape[0], predictions.shape[1]*predictions.shape[2], predictions.shape[3]))
+    #preds = np.reshape(predictions, (predictions.shape[0], predictions.shape[1]*predictions.shape[2], predictions.shape[3]))
     ind=0
-    class_one = preds[ind, :, 0]
-    class_two = preds[ind, :, 1]
-    class_three = preds[ind, :, 2]
+    clip = 0
+    # class_one = preds[ind, clip, 0]
+    # class_two = preds[ind, clip, 1]
+    # class_three = preds[ind, clip, 2]
+    class_one = predictions[ind, clip, :, 0]
+    class_two = predictions[ind, clip, :, 1]
+    class_three = predictions[ind, clip, :, 2]
 
     experiments = np.array(experiments)
-    exps = np.reshape(experiments, (experiments.shape[0]*experiments.shape[1], experiments.shape[2]))
-    exp_one = exps[:, 0]
-    exp_two = exps[:, 1]
-    exp_three = exps[:, 2]
+    # exps = np.reshape(experiments, (experiments.shape[0]*experiments.shape[1], experiments.shape[2]))
+    # exp_one = exps[clip, 0]
+    # exp_two = exps[clip, 1]
+    # exp_three = exps[clip, 2]
+    exp_one = experiments[ind, :, 0]
+    exp_two = experiments[ind, :, 1]
+    exp_three = experiments[ind, :, 2]
+
+    pdf_folder = '/pdfs'
+    if not os.path.exists(output_dir+pdf_folder):
+        os.makedirs(output_dir+pdf_folder)
+    output_dir += pdf_folder
 
     if sum(class_one) != 0:
         fig_one_p = seaborn.distplot(class_one, color='b', kde=True, hist=False).get_figure()
@@ -158,9 +303,13 @@ def change_zeros(x):
             x[i] = 1
 
 
-def get_model(is_checkpoint, filename):
+def get_model(is_checkpoint, filename, use_bas):
     if is_checkpoint:
-        model = create_att_model()
+        model = None
+        if use_bas:
+            model = create_bas_model()
+        else:
+            model = create_att_model()
         model.load_weights(filename)
 
         # same as it was trained with
@@ -177,15 +326,15 @@ def get_model(is_checkpoint, filename):
     return load_model(filename, custom_objects={'correlation_multi': correlation_multi, 'r_sq_multi': r_sq_multi, 'MultiHead': MultiHead, 'AttentionDilated': AttentionDilated}, compile=True)
 
 if __name__=='__main__':
-    if len(sys.argv) < 6:
-        print("Expected: run_predictions.py <is_model> <model_filename> <checkpoint_filename> <output_dir> <use_train>")
+    if len(sys.argv) < 7:
+        print("Expected: run_predictions.py <is_model> <model_filename> <checkpoint_filename> <output_dir> <use_train> <bas>")
         sys.exit(2)
 
     if int(sys.argv[1]) == 0:
         # using a checkpoint
         print('evaluating checkpoint from %s' % sys.argv[3])
-        load_and_predict(True, sys.argv[3], sys.argv[4], int(sys.argv[5]) == 1)
+        load_and_predict(True, sys.argv[3], sys.argv[4], int(sys.argv[5]) == 1, int(sys.argv[6]) == 1)
     else:
         # using a model
         print('evaluating model from %s' % sys.argv[2])
-        load_and_predict(False, sys.argv[2], sys.argv[4], int(sys.argv[5]) == 1)
+        load_and_predict(False, sys.argv[2], sys.argv[4], int(sys.argv[5]) == 1, int(sys.argv[6]) == 1)
