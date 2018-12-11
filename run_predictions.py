@@ -55,7 +55,7 @@ def load_and_predict(is_checkpoint, filename, output_dir, use_train, use_bas=Fal
         np.save(output_dir+"/y_predictions.npy", y_predictions)
 
     print("creating plots")
-    #create_prediction_histograms(y_predictions, Y, output_dir)
+    create_prediction_histograms(y_predictions, Y, output_dir)
     print("bar graphs done")
     create_scatterplot(y_predictions, Y, output_dir)
     print("scatters done")
