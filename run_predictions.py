@@ -174,9 +174,6 @@ def create_prediction_histograms(predictions, experiments, output_dir):
             plt.clf()
 
 def create_scatterplot(predictions, experiments, output_dir):
-    print(predictions.shape)
-    print(experiments.shape)
-
     predictions = np.array(predictions, dtype=float)
     num_try = 1
     ind=0
@@ -214,6 +211,7 @@ def create_scatterplot(predictions, experiments, output_dir):
         if c2:
             class_two /= np.linalg.norm(predictions[ind, :, :limit, 1])
         if c3:
+            print("will make class 3")
             class_three /= np.linalg.norm(predictions[ind, :, :limit, 2])
 
         print("\nHERE")
