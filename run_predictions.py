@@ -200,7 +200,7 @@ def create_scatterplot(predictions, experiments, output_dir):
     exp_three /= np.linalg.norm(exp_three)
 
     # bc it takes too long, cut it short 
-    limit = 500
+    limit = len(class_one)
     class_one = class_one[:limit]
     class_two = class_two[:limit]
     class_three = class_three[:limit]
@@ -219,6 +219,8 @@ def create_scatterplot(predictions, experiments, output_dir):
         # frame1.axes.get_xaxis().set_visible(False)
         # frame1.axes.get_yaxis().set_visible(False)
         seaborn.regplot(class_one, exp_one, scatter=True, logx=True, color='b')
+        plt.xlabel("log2 prediction")
+        plt.ylabel("log2 experiment")
         plt.savefig(output_dir+('/class_one_scatter.png'))
         plt.clf()
         print("made cl1")
@@ -229,6 +231,8 @@ def create_scatterplot(predictions, experiments, output_dir):
         # frame1.axes.get_xaxis().set_visible(False)
         # frame1.axes.get_yaxis().set_visible(False)
         seaborn.regplot(class_two, exp_two, scatter=True, logx=True, color='r')
+        plt.xlabel("log2 prediction")
+        plt.ylabel("log2 experiment")
         plt.savefig(output_dir+('/class_two_scatter.png'))
         plt.clf()
         print('made cl2')
@@ -239,6 +243,8 @@ def create_scatterplot(predictions, experiments, output_dir):
         # frame1.axes.get_xaxis().set_visible(False)
         # frame1.axes.get_yaxis().set_visible(False)  
         seaborn.regplot(class_three, exp_three, scatter=True, logx=True, color='g').get_figure()
+        plt.xlabel("log2 prediction")
+        plt.ylabel("log2 experiment")
         plt.savefig(output_dir+('/class_three_scatter.png'))
         plt.clf()
         print("made cl3")
