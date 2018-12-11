@@ -1,15 +1,12 @@
-import keras
-import numpy as np
-
-from keras.layers import Layer, Conv1D, MaxPool1D, Dropout, BatchNormalization, Activation, Dense, TimeDistributed, Input, concatenate, Flatten, Lambda
-from keras.utils.io_utils import HDF5Matrix
-from keras.models import load_model, Model
-from keras.callbacks import ModelCheckpoint
-from keras import metrics, backend as K
-
 import tensorflow as tf
+import keras 
 
+from keras import metrics, backend as K
+from keras.models import Model
+from keras.layers import Layer, Conv1D, MaxPool1D, Dropout, BatchNormalization, Activation, Dense, TimeDistributed, Input, concatenate, Flatten, Lambda
 from keras_multi_head import MultiHead
+
+import numpy as np
 
 # Adapted from:
 # https://github.com/CyberZHG/keras-self-attention/blob/master/keras_self_attention/scaled_dot_attention.py
@@ -176,6 +173,29 @@ class AttentionDilated(Layer):
 
         return out
 
+def poisson_multi(y_true, y_pred):
+    poisson = K.mean(y_pred - y_true * K.log(y_pred + K.epsilon()), axis=-2)
+    return K.mean(poisson, axis=-1)
+
+def correlation_multi(y_true, y_pred):
+    mean_true = K.expand_dims(K.mean(y_true, axis=-2), axis=-2)
+    mean_pred = K.expand_dims(K.mean(y_pred, axis=-2), axis=-2)
+    std_true = K.expand_dims(K.std(y_true, axis=-2), axis=-2)
+    std_pred = K.expand_dims(K.std(y_pred, axis=-2), axis=-2)
+    sts_true = (y_true - mean_true) / std_true
+    sts_pred = (y_pred - mean_pred) / std_pred
+    corrs = K.mean(sts_true * sts_pred, axis=-2)
+    return K.mean(corrs, axis=-1)
+
+def r_sq_multi(y_true, y_pred):
+    resids = y_true - y_pred
+    mean_true = K.mean(y_true, axis=-2)
+    cent_true = y_true - K.expand_dims(mean_true, axis=-2)
+    ss_res = K.sum(K.square(resids), axis=-2)
+    ss_tot = K.sum(K.square(cent_true), axis=-2)
+    r_sq = 1 - ss_res / ss_tot
+    return K.mean(r_sq, axis=-1)
+
 def rev_comp(seq):
     rev = K.reverse(seq, -2)
     comp = tf.gather(rev, [2,3,0,1], axis=-1)
@@ -206,7 +226,7 @@ def create_att_model():
         activation=None, 
         padding='same', 
         dilation_rate=1
-    )(seqs)
+    ) (seqs)
     b1 = BatchNormalization()(c1)
     a1 = Activation('relu')(b1)
     d1 = Dropout(conv_dropout)(a1)
@@ -383,125 +403,18 @@ def create_att_model():
     fat = TimeDistributed(Flatten())(dat)
     sat = TimeDistributed(Dense(256, activation='relu'))(fat)
     oat = concatenate([fat, od5])
+    # oat = concatenate([sat, od5])
+
 
     out = TimeDistributed(Dense(3, activation='relu'))(oat)
-    return seqs, out
 
-# define model
-seqs, out = create_att_model()
-model = Model(inputs=seqs, outputs=out)
+    model = Model(inputs=seqs, outputs=out)
+    seq_forward = Input(shape=(None, 4))
+    seq_revcomp = Lambda(rev_comp)(seq_forward)
 
-seq_forward = Input(shape=(None, 4))
-seq_revcomp = Lambda(rev_comp)(seq_forward)
+    output_forward = model(seq_forward)
+    output_revcomp = model(seq_revcomp)
+    output_back = Lambda(lambda x: K.reverse(x, -2))(output_revcomp)
 
-output_forward = model(seq_forward)
-output_revcomp = model(seq_revcomp)
-output_back = Lambda(lambda x: K.reverse(x, -2))(output_revcomp)
-
-model_bi = Model(inputs=seq_forward, outputs=[output_forward, output_back])
-
-learning_rate = 0.002
-beta_1 = 0.97
-beta_2 = 0.98
-batch_size = 4
-
-# get data from h5 file
-train_small = batch_size*200
-data_file = "./data/new_heart_l131k.h5"
-# X_train = HDF5Matrix(data_file, 'train_in', start=0, end =train_small)
-# y_train = HDF5Matrix(data_file, 'train_out', start=0, end =train_small)
-X_train = HDF5Matrix(data_file, 'train_in')
-y_train = HDF5Matrix(data_file, 'train_out')
-
-valid_small = batch_size*10
-# X_valid = HDF5Matrix(data_file, 'valid_in', start=0, end =valid_small)
-# y_valid = HDF5Matrix(data_file, 'valid_out', start=0, end=valid_small)
-X_valid = HDF5Matrix(data_file, 'valid_in')
-y_valid = HDF5Matrix(data_file, 'valid_out')
-
-test_small = batch_size*100
-# X_test = HDF5Matrix(data_file, 'test_in', start=0, end=test_small)
-# y_test = HDF5Matrix(data_file, 'test_out', start=0, end=test_small)
-X_test = HDF5Matrix(data_file, 'test_in')
-y_test = HDF5Matrix(data_file, 'test_out')
-
-print("\ntrain")
-print(X_train.shape)
-print(y_train.shape)
-
-print("\nvalidation")
-print(X_valid.shape)
-print(y_valid.shape)
-
-print("\nTest")
-print(X_test.shape)
-print(y_test.shape)
-
-# # define custom metric euclidean distance
-# def metric_distance(y_true, y_pred):
-#     norm_true = backend.l2_normalize(y_true, axis=None)
-#     norm_pred = backend.l2_normalize(y_pred, axis=None)
-#     return backend.sqrt(backend.sum(backend.square(norm_true - norm_pred), axis=None, keepdims=False))
-
-def poisson_multi(y_true, y_pred):
-    poisson = K.mean(y_pred - y_true * K.log(y_pred + K.epsilon()), axis=-2)
-    return K.mean(poisson, axis=-1)
-
-def correlation_multi(y_true, y_pred):
-    mean_true = K.expand_dims(K.mean(y_true, axis=-2), axis=-2)
-    mean_pred = K.expand_dims(K.mean(y_pred, axis=-2), axis=-2)
-    std_true = K.expand_dims(K.std(y_true, axis=-2), axis=-2)
-    std_pred = K.expand_dims(K.std(y_pred, axis=-2), axis=-2)
-    sts_true = (y_true - mean_true) / std_true
-    sts_pred = (y_pred - mean_pred) / std_pred
-    # sts_true = (y_true - mean_true)
-    # sts_pred = (y_pred - mean_pred)
-    # cent_true = y_true - K.expand_dims(mean_true, axis=-2)
-    # cent_pred = y_pred - K.expand_dims(mean_pred, axis=-2)
-    # norm_true = K.l2_normalize(cent_true, axis=-2)
-    # norm_pred = K.l2_normalize(cent_pred, axis=-2)
-    corrs = K.mean(sts_true * sts_pred, axis=-2)
-    # print(corrs) ####
-    return K.mean(corrs, axis=-1)
-
-def r_sq_multi(y_true, y_pred):
-    resids = y_true - y_pred
-    mean_true = K.mean(y_true, axis=-2)
-    cent_true = y_true - K.expand_dims(mean_true, axis=-2)
-    ss_res = K.sum(K.square(resids), axis=-2)
-    ss_tot = K.sum(K.square(cent_true), axis=-2)
-    r_sq = 1 - ss_res / ss_tot
-    return K.mean(r_sq, axis=-1)
-
-model_bi.compile(
-    loss=poisson_multi,
-    loss_weights=[0.5, 0.5],
-    optimizer=keras.optimizers.adam(lr=learning_rate, beta_1=beta_1, beta_2=beta_2),
-    metrics=[correlation_multi, r_sq_multi]
-)
-
-# keras.utils.plot_model(model, to_file='model_att.png') ####
-
-# checkpoint
-save_filepath = "./saved_models/"
-filepath= save_filepath + "att-weights-improvement-{epoch:02d}-{val_loss:.2f}.hdf5"
-checkpoint = ModelCheckpoint(filepath, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
-callbacks_list = [checkpoint]
-
-model_bi.fit(
-    X_train, 
-    [y_train, y_train], 
-    validation_data=(X_valid, [y_valid, y_valid]), 
-    shuffle='batch', 
-    epochs=7, 
-    batch_size=batch_size,
-    callbacks=callbacks_list
-)
-model_bi.evaluate(X_test, [y_test, y_test], batch_size=batch_size)
-
-# save the model 
-model_name = "attention.h5"
-model_bi.save(save_filepath+model_name)
-
-# example of how to load the saved model
-# test = load_model(save_filepath+model_name, custom_objects={'metric_distance': metric_distance})
+    model_bi = Model(inputs=seq_forward, outputs=[output_forward, output_back])
+    return model_bi
