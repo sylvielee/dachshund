@@ -55,7 +55,7 @@ def load_and_predict(is_checkpoint, filename, output_dir, use_train, use_bas=Fal
         np.save(output_dir+"/y_predictions.npy", y_predictions)
 
     print("creating plots")
-    create_prediction_histograms(y_predictions, Y, output_dir)
+    #create_prediction_histograms(y_predictions, Y, output_dir)
     print("bar graphs done")
     create_scatterplot(y_predictions, Y, output_dir)
     print("scatters done")
@@ -157,7 +157,6 @@ def create_scatterplot(predictions, experiments, output_dir):
 
     print(experiments[0])
     experiments = np.array(experiments, dtype=float)
-    num_clips = predictions.shape[1]
 
     scatter_folder = '/scatters'
     if not os.path.exists(output_dir+scatter_folder):
@@ -185,9 +184,6 @@ def create_scatterplot(predictions, experiments, output_dir):
     if c3:
         class_three /= np.linalg.norm(predictions[ind, :, :, 2])
 
-    print("\nHERE")
-    print(class_three.shape)
-
     exp_one = experiments[:, :, 0]/np.linalg.norm(experiments[:, :, 0])
     exp_one = np.reshape(exp_one, (exp_one.shape[0]*exp_one.shape[1], 1)).flatten()
     exp_one /= np.linalg.norm(exp_one)
@@ -200,6 +196,18 @@ def create_scatterplot(predictions, experiments, output_dir):
     exp_three = np.reshape(exp_three, (exp_three.shape[0]*exp_three.shape[1], 1)).flatten()
     exp_three /= np.linalg.norm(exp_three)
 
+    # bc it takes too long, cut it short 
+    limit = 1000
+    class_one = class_one[:limit]
+    class_two = class_two[:limit]
+    class_three = class_three[:limit]
+
+    exp_one = exp_one[:limit]
+    exp_two = exp_two[:limit]
+    exp_three = exp_three[:limit]
+
+    print("\nHERE")
+    print(class_three.shape)
     print(exp_three.shape)
 
     if c1:
