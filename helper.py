@@ -402,7 +402,8 @@ def create_att_model():
     dat = Dropout(attn_dropout)(atn)
     fat = TimeDistributed(Flatten())(dat)
     sat = TimeDistributed(Dense(256, activation='relu'))(fat)
-    oat = concatenate([fat, od5])
+    oat = concatenate([fat, od4])
+    # oat = concatenate([fat, od5])
     # oat = concatenate([sat, od5])
 
 
@@ -669,10 +670,14 @@ def create_bas_model():
 
     # Self-Attention Layer
 
-    # atn = MultiHead(AttentionDilated(attn_units, dilation_rate=attn_dilation), layer_num=attn_heads)(od4)
-    # dat = Dropout(attn_dropout)(atn)
-    # fat = TimeDistributed(Flatten())(dat)
-    # oat = concatenate([fat, od4])
+    atn = MultiHead(AttentionDilated(attn_units, dilation_rate=attn_dilation), layer_num=attn_heads)(od4)
+    dat = Dropout(attn_dropout)(atn)
+    fat = TimeDistributed(Flatten())(dat)
+    
+
+    sat = TimeDistributed(Dense(256, activation='relu'))(fat)
+    #oat = concatenate([sat, od4])
+    oat = concatenate([fat, od5])
 
     out = TimeDistributed(Dense(3, activation='relu'))(od8)
 

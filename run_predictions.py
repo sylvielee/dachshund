@@ -55,48 +55,35 @@ def load_and_predict(is_checkpoint, filename, output_dir, use_train, use_bas=Fal
         np.save(output_dir+"/y_predictions.npy", y_predictions)
 
     print("creating plots")
-    #create_prediction_histograms(y_predictions, Y, output_dir)
+    create_prediction_histograms(y_predictions, Y, output_dir)
     print("bar graphs done")
     create_scatterplot(y_predictions, Y, output_dir)
     print("scatters done")
-    create_pdf_graph(y_predictions, Y, output_dir)
+    # create_pdf_graph(y_predictions, Y, output_dir)
 
     print('finished successfully!')
     
 
 def create_prediction_histograms(predictions, experiments, output_dir):
     predictions = np.array(predictions)
-    #preds = np.reshape(predictions, (predictions.shape[0], predictions.shape[1]*predictions.shape[2], predictions.shape[3]))
     num_try = 10
     ind=0
 
-    print(experiments[0])
     experiments = np.array(experiments, dtype=float)
-    num_clips = predictions.shape[1]
+    f = int(predictions.shape[1]/num_try)
+    clips = [i*f for in i in range(num_try)]
 
     hist_folder = '/hists'
     if not os.path.exists(output_dir+hist_folder):
         os.makedirs(output_dir+hist_folder)
     output_dir += hist_folder
 
-    # print("predictions/experiments shape")
-    # print(predictions.shape)
-    # print(experiments.shape)
-
-    # print("\npreds/exps shape")
-    # print(preds.shape)
-    # print(exps.shape)
-
-    # print("\nclass one/exp one shape")
-    # print(class_three.shape)
-    # print(exp_three.shape)
-
     limit = 100 # predictions.shape[2]
     xaxis = np.array([i for i in range(limit)])
     print("x axis is ", limit)
 
     for i in range(num_try):
-        clip = np.random.randint(0, num_clips)
+        clip = clips[i]
 
         class_one = predictions[ind, clip, :limit, 0]
         class_two = predictions[ind, clip, :limit, 1]
@@ -106,22 +93,13 @@ def create_prediction_histograms(predictions, experiments, output_dir):
         exp_two = experiments[clip, :limit, 1]
         exp_three = experiments[clip, :limit, 2]
 
-        # print("\nclass three/exp three shape")
-        # print(class_three.shape)
-        # print(exp_three.shape)
-
-        # print("clip: ", clip)
-        # print(exp_three)
-
-        # print("avg: ", np.mean(exp_three))
-
         if sum(class_one) != 0:
             plt.figure(figsize=(10,2))
             frame1 = plt.gca()
             frame1.axes.get_xaxis().set_visible(False)
             frame1.axes.get_yaxis().set_visible(False)
 
-            seaborn.barplot(class_one, color='b', kde=False).get_figure()
+            seaborn.barplot(xaxis, class_one, color='b',).get_figure()
             plt.savefig(output_dir+'/%d_pred_class_one_hist.png' % clip)
             plt.clf()
 
@@ -130,7 +108,7 @@ def create_prediction_histograms(predictions, experiments, output_dir):
             frame1.axes.get_xaxis().set_visible(False)
             frame1.axes.get_yaxis().set_visible(False)
 
-            seaborn.barplot(exp_one, color='lightskyblue').get_figure()
+            seaborn.barplot(xaxis, exp_one, color='lightskyblue').get_figure()
             plt.savefig(output_dir+'/%d_exp_class_one_hist.png' % clip)
             plt.clf()
 
@@ -140,7 +118,7 @@ def create_prediction_histograms(predictions, experiments, output_dir):
             frame1.axes.get_xaxis().set_visible(False)
             frame1.axes.get_yaxis().set_visible(False)
 
-            seaborn.barplot(class_two, color='r').get_figure()
+            seaborn.barplot(xaxis, class_two, color='r').get_figure()
             plt.savefig(output_dir+'/%d_pred_class_two_hist.png' % clip)
             plt.clf()
 
@@ -150,7 +128,7 @@ def create_prediction_histograms(predictions, experiments, output_dir):
             frame1.axes.get_xaxis().set_visible(False)
             frame1.axes.get_yaxis().set_visible(False)
 
-            seaborn.barplot(exp_two, color='salmon').get_figure()
+            seaborn.barplot(xaxis, exp_two, color='salmon').get_figure()
             plt.savefig(output_dir+'/%d_exp_class_two_hist.png' % clip)
             plt.clf()
 
@@ -175,7 +153,6 @@ def create_prediction_histograms(predictions, experiments, output_dir):
 
 def create_scatterplot(predictions, experiments, output_dir):
     predictions = np.array(predictions, dtype=float)
-    num_try = 1
     ind=0
 
     print(experiments[0])
@@ -187,73 +164,70 @@ def create_scatterplot(predictions, experiments, output_dir):
         os.makedirs(output_dir+scatter_folder)
     output_dir += scatter_folder
 
-    limit = predictions.shape[2]
+    class_one = predictions[ind, :, :, 0]
+    class_one = np.reshape(class_one, (class_one.shape[0]*class_one.shape[1], 1)).flatten()
 
-    for i in range(num_try):
-        clip = np.random.randint(0, num_clips)
+    class_two = predictions[ind, :, :, 1]
+    class_two = np.reshape(class_two, (class_two.shape[0]*class_two.shape[1], 1)).flatten()
 
-        class_one = predictions[ind, :, :limit, 0]
-        class_one = np.reshape(class_one, (class_one.shape[0]*class_one.shape[1], 1)).flatten()
+    class_three = predictions[ind, :, :, 2]
+    class_three = np.reshape(class_three, (class_three.shape[0]*class_three.shape[1], 1)).flatten()
 
-        class_two = predictions[ind, :, :limit, 1]
-        class_two = np.reshape(class_two, (class_two.shape[0]*class_two.shape[1], 1)).flatten()
+    print(class_three)
+    c1 = sum(class_one) != 0
+    c2 = sum(class_two) != 0
+    c3 = sum(class_three) != 0
 
-        class_three = predictions[ind, :, :limit, 2]
-        class_three = np.reshape(class_three, (class_three.shape[0]*class_three.shape[1], 1)).flatten()
+    if c1:
+        class_one /= np.linalg.norm(predictions[ind, :, :, 0])
+    if c2:
+        class_two /= np.linalg.norm(predictions[ind, :, :, 1])
+    if c3:
+        class_three /= np.linalg.norm(predictions[ind, :, :, 2])
 
+    print("\nHERE")
+    print(class_three.shape)
 
-        c1 = sum(class_one) != 0
-        c2 = sum(class_two) != 0
-        c3 = sum(class_three) != 0
+    exp_one = experiments[:, :, 0]/np.linalg.norm(experiments[:, :, 0])
+    exp_one = np.reshape(exp_one, (exp_one.shape[0]*exp_one.shape[1], 1)).flatten()
+    exp_one /= np.linalg.norm(exp_one)
 
-        if c1:
-            class_one /= np.linalg.norm(predictions[ind, :, :limit, 0])
-        if c2:
-            class_two /= np.linalg.norm(predictions[ind, :, :limit, 1])
-        if c3:
-            print("will make class 3")
-            class_three /= np.linalg.norm(predictions[ind, :, :limit, 2])
+    exp_two = experiments[:, :, 1]/np.linalg.norm(experiments[:, :, 1])
+    exp_two = np.reshape(exp_two, (exp_two.shape[0]*exp_two.shape[1], 1)).flatten()
+    exp_two /= np.linalg.norm(exp_two)
 
-        print("\nHERE")
-        print(class_three.shape)
+    exp_three = experiments[:, :, 2]/np.linalg.norm(experiments[:, :, 2])
+    exp_three = np.reshape(exp_three, (exp_three.shape[0]*exp_three.shape[1], 1)).flatten()
+    exp_three /= np.linalg.norm(exp_three)
 
-        exp_one = experiments[:, :limit, 0]/np.linalg.norm(experiments[:, :limit, 0])
-        exp_one = np.reshape(exp_one, (exp_one.shape[0]*exp_one.shape[1], 1)).flatten()
+    print(exp_three.shape)
 
-        exp_two = experiments[:, :limit, 1]/np.linalg.norm(experiments[:, :limit, 1])
-        exp_two = np.reshape(exp_two, (exp_two.shape[0]*exp_two.shape[1], 1)).flatten()
+    if c1:
+        # plt.figure(figsize=(10,2))
+        frame1 = plt.gca()
+        frame1.axes.get_xaxis().set_visible(False)
+        frame1.axes.get_yaxis().set_visible(False)
+        seaborn.regplot(class_one, exp_one, scatter=True, logx=True, color='b')
+        plt.savefig(output_dir+('/class_one_scatter.png'))
+        plt.clf()
 
-        exp_three = experiments[:, :limit, 2]/np.linalg.norm(experiments[:, :limit, 2])
-        exp_three = np.reshape(exp_three, (exp_three.shape[0]*exp_three.shape[1], 1)).flatten()
+    if c2:
+        # plt.figure(figsize=(10,2))
+        frame1 = plt.gca()
+        frame1.axes.get_xaxis().set_visible(False)
+        frame1.axes.get_yaxis().set_visible(False)
+        seaborn.regplot(class_two, exp_two, scatter=True, logx=True, color='r')
+        plt.savefig(output_dir+('/class_two_scatter.png'))
+        plt.clf()
 
-        print(exp_three.shape)
-
-        if c1:
-            # plt.figure(figsize=(10,2))
-            frame1 = plt.gca()
-            frame1.axes.get_xaxis().set_visible(False)
-            frame1.axes.get_yaxis().set_visible(False)
-            seaborn.regplot(class_one, exp_one, scatter=True, logx=True, color='b')
-            plt.savefig(output_dir+('/%d_class_one_scatter.png'%clip))
-            plt.clf()
-
-        if c2:
-            # plt.figure(figsize=(10,2))
-            frame1 = plt.gca()
-            frame1.axes.get_xaxis().set_visible(False)
-            frame1.axes.get_yaxis().set_visible(False)
-            seaborn.regplot(class_two, exp_two, scatter=True, logx=True, color='r')
-            plt.savefig(output_dir+('/%d_class_two_scatter.png'%clip))
-            plt.clf()
-
-        if c3:
-            # plt.figure(figsize=(10,2))
-            frame1 = plt.gca()
-            frame1.axes.get_xaxis().set_visible(False)
-            frame1.axes.get_yaxis().set_visible(False)  
-            seaborn.regplot(class_three, exp_three, scatter=True, logx=True, color='g').get_figure()
-            plt.savefig(output_dir+('/%d_class_three_scatter.png'%clip))
-            plt.clf()
+    if c3:
+        # plt.figure(figsize=(10,2))
+        frame1 = plt.gca()
+        frame1.axes.get_xaxis().set_visible(False)
+        frame1.axes.get_yaxis().set_visible(False)  
+        seaborn.regplot(class_three, exp_three, scatter=True, logx=True, color='g').get_figure()
+        plt.savefig(output_dir+('/class_three_scatter.png'))
+        plt.clf()
 
 def create_pdf_graph(predictions, experiments, output_dir):
     predictions = np.array(predictions)
@@ -292,13 +266,6 @@ def create_pdf_graph(predictions, experiments, output_dir):
     if sum(class_three) != 0:
         fig_three = seaborn.distplot(class_three, color='g', kde=True, hist=False).get_figure()
         fig_three.savefig(output_dir+'/pred_class_three_density.png')
-
-
-# for log to replace NaN with zeros
-def change_zeros(x):
-    for i in range(len(x)):
-        if x[i] == 0:
-            x[i] = 1
 
 
 def get_model(is_checkpoint, filename, use_bas):
