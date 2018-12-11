@@ -197,7 +197,7 @@ def create_scatterplot(predictions, experiments, output_dir):
     exp_three /= np.linalg.norm(exp_three)
 
     # bc it takes too long, cut it short 
-    limit = 1000
+    limit = 100
     class_one = class_one[:limit]
     class_two = class_two[:limit]
     class_three = class_three[:limit]
@@ -218,6 +218,7 @@ def create_scatterplot(predictions, experiments, output_dir):
         seaborn.regplot(class_one, exp_one, scatter=True, logx=True, color='b')
         plt.savefig(output_dir+('/class_one_scatter.png'))
         plt.clf()
+        print("made cl1")
 
     if c2:
         # plt.figure(figsize=(10,2))
@@ -227,6 +228,7 @@ def create_scatterplot(predictions, experiments, output_dir):
         seaborn.regplot(class_two, exp_two, scatter=True, logx=True, color='r')
         plt.savefig(output_dir+('/class_two_scatter.png'))
         plt.clf()
+        print('made cl2')
 
     if c3:
         # plt.figure(figsize=(10,2))
@@ -236,6 +238,7 @@ def create_scatterplot(predictions, experiments, output_dir):
         seaborn.regplot(class_three, exp_three, scatter=True, logx=True, color='g').get_figure()
         plt.savefig(output_dir+('/class_three_scatter.png'))
         plt.clf()
+        print("made cl3")
 
 def create_pdf_graph(predictions, experiments, output_dir):
     predictions = np.array(predictions)
