@@ -10,6 +10,7 @@ import os
 import seaborn
 import numpy as np
 from matplotlib import pyplot as plt
+from scipy import stats
 
 def load_and_predict(is_checkpoint, filename, output_dir, use_train):
     if not os.path.exists(output_dir):
@@ -46,7 +47,9 @@ def load_and_predict(is_checkpoint, filename, output_dir, use_train):
         # write predictions to file
         np.save(output_dir+"/y_predictions.npy", y_predictions)
 
-    create_prediction_histograms(y_predictions, Y, output_dir)
+    # create_prediction_histograms(y_predictions, Y, output_dir)
+    create_scatterplot(y_predictions, Y, output_dir)
+    create_pdf_graph(y_predictions, Y, output_dir)
 
     print('finished successfully!')
     
@@ -120,6 +123,32 @@ def create_scatterplot(predictions, experiments, output_dir):
     fig_one.savefig(output_dir+'/class_one_scatter.png')
     fig_two.savefig(output_dir+'/class_two_scatter.png')
     fig_three.savefig(output_dir+'/class_three_scatter.png')
+
+def create_pdf_graph(predictions, experiments, output_dir):
+    predictions = np.array(predictions)
+    preds = np.reshape(predictions, (predictions.shape[0], predictions.shape[1]*predictions.shape[2], predictions.shape[3]))
+    ind=0
+    class_one = preds[ind, :, 0]
+    class_two = preds[ind, :, 1]
+    class_three = preds[ind, :, 2]
+
+    experiments = np.array(experiments)
+    exps = np.reshape(experiments, (experiments.shape[0]*experiments.shape[1], experiments.shape[2]))
+    exp_one = exps[:, 0]
+    exp_two = exps[:, 1]
+    exp_three = exps[:, 2]
+
+    if sum(class_one) != 0:
+        fig_one_p = seaborn.distplot(class_one, color='b', kde=True, hist=False).get_figure()
+        fig_one_p.savefig(output_dir+'/pred_class_one_density.png')
+
+    if sum(class_two) != 0:
+        fig_two_p = seaborn.distplot(class_two, color='r', kde=True, hist=False).get_figure()
+        fig_two_p.savefig(output_dir+'/pred_class_two_density.png')
+
+    if sum(class_three) != 0:
+        fig_three = seaborn.distplot(class_three, color='g', kde=True, hist=False).get_figure()
+        fig_three.savefig(output_dir+'/pred_class_three_density.png')
 
 
 # for log to replace NaN with zeros
