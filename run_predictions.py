@@ -55,7 +55,7 @@ def load_and_predict(is_checkpoint, filename, output_dir, use_train, use_bas=Fal
         np.save(output_dir+"/y_predictions.npy", y_predictions)
 
     print("creating plots")
-    create_prediction_histograms(y_predictions, Y, output_dir)
+    #create_prediction_histograms(y_predictions, Y, output_dir)
     print("bar graphs done")
     create_scatterplot(y_predictions, Y, output_dir)
     print("scatters done")
@@ -214,7 +214,7 @@ def create_scatterplot(predictions, experiments, output_dir):
     print(exp_three.shape)
 
     if c1:
-        # plt.figure(figsize=(10,2))
+        plt.figure(figsize=(10,10))
         # frame1 = plt.gca()
         # frame1.axes.get_xaxis().set_visible(False)
         # frame1.axes.get_yaxis().set_visible(False)
@@ -227,7 +227,7 @@ def create_scatterplot(predictions, experiments, output_dir):
         print("made cl1")
 
     if c2:
-        # plt.figure(figsize=(10,2))
+        plt.figure(figsize=(10,10))
         # frame1 = plt.gca()
         # frame1.axes.get_xaxis().set_visible(False)
         # frame1.axes.get_yaxis().set_visible(False)
@@ -240,7 +240,7 @@ def create_scatterplot(predictions, experiments, output_dir):
         print('made cl2')
 
     if c3:
-        # plt.figure(figsize=(10,2))
+        plt.figure(figsize=(10,10))
         # frame1 = plt.gca()
         # frame1.axes.get_xaxis().set_visible(False)
         # frame1.axes.get_yaxis().set_visible(False)  
