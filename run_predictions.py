@@ -102,6 +102,8 @@ def create_prediction_histograms(predictions, experiments, output_dir):
             seaborn.barplot(xaxis, class_one, color='b',).get_figure()
             plt.savefig(output_dir+'/%d_pred_class_one_hist.png' % clip)
             plt.clf()
+            plt.figure.close()
+
 
             plt.figure(figsize=(10,2))
             frame1 = plt.gca()
@@ -111,6 +113,7 @@ def create_prediction_histograms(predictions, experiments, output_dir):
             seaborn.barplot(xaxis, exp_one, color='lightskyblue').get_figure()
             plt.savefig(output_dir+'/%d_exp_class_one_hist.png' % clip)
             plt.clf()
+            plt.figure.close()
 
         if sum(class_two) != 0:
             plt.figure(figsize=(10,2))
@@ -121,6 +124,7 @@ def create_prediction_histograms(predictions, experiments, output_dir):
             seaborn.barplot(xaxis, class_two, color='r').get_figure()
             plt.savefig(output_dir+'/%d_pred_class_two_hist.png' % clip)
             plt.clf()
+            plt.figure.close()
 
 
             plt.figure(figsize=(10,2))
@@ -131,6 +135,7 @@ def create_prediction_histograms(predictions, experiments, output_dir):
             seaborn.barplot(xaxis, exp_two, color='salmon').get_figure()
             plt.savefig(output_dir+'/%d_exp_class_two_hist.png' % clip)
             plt.clf()
+            plt.figure.close()
 
         if sum(class_three) != 0:
             plt.figure(figsize=(10,2))
@@ -141,6 +146,7 @@ def create_prediction_histograms(predictions, experiments, output_dir):
             seaborn.barplot(xaxis, class_three, color='g')
             plt.savefig(output_dir+'/%d_pred_class_three_hist.png' % clip)
             plt.clf()
+            plt.figure.close()
 
             plt.figure(figsize=(10,2))
             frame1 = plt.gca()
@@ -150,6 +156,7 @@ def create_prediction_histograms(predictions, experiments, output_dir):
             seaborn.barplot(xaxis, exp_three, color='lightgreen')
             plt.savefig(output_dir+'/%d_exp_class_three_hist.png' % clip)
             plt.clf()
+            plt.figure.close()
 
 def create_scatterplot(predictions, experiments, output_dir):
     predictions = np.array(predictions, dtype=float)
